@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.wexa</groupId>
+  <artifactId>graph-benchmark</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- Neo4j Bolt driver: used for CognoDB, Neo4j, and Memgraph (all speak Bolt+Cypher) -->
+    <dependency>
+      <groupId>org.neo4j.driver</groupId>
+      <artifactId>neo4j-java-driver</artifactId>
+      <version>5.24.0</version>
+    </dependency>
+
+    <!-- ArangoDB Java driver -->
+    <dependency>
+      <groupId>com.arangodb</groupId>
+      <artifactId>arangodb-java-driver</artifactId>
+      <version>7.15.0</version>
+    </dependency>
+
+    <!-- Dgraph Java gRPC client -->
+    <dependency>
+      <groupId>io.dgraph</groupId>
+      <artifactId>dgraph4j</artifactId>
+      <version>21.3.1</version>
+    </dependency>
+
+    <!-- JSON handling for results -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+
+    <!-- .env file loading -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
+    <!-- CSV reading/writing -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.11.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>graph-benchmark</finalName>
+    <plugins>
+      <!-- Builds a single runnable "fat jar" with all dependencies bundled -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.wexa.benchmark.Main</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,8 @@
+.env
+data/*.csv
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+results/*.json

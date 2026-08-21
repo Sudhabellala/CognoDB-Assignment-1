@@ -1,0 +1,95 @@
+version: "3.8"
+
+# All services are capped to 0.5 vCPU / 256 MB RAM to match CognoDB's free-tier
+# (burstable 0.5 vCPU, 256 MB RAM, 1 GB disk). Disk is bounded by the mounted
+# volumes plus the size of the loaded dataset (~370K edges is tiny, well under 1GB).
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: bench-neo4j
+    ports:
+      - "7687:7687"   # bolt
+      - "7474:7474"   # http browser (optional, for debugging)
+    environment:
+      - NEO4J_AUTH=neo4j/benchmarkpass
+      - NEO4J_server_memory_heap_max__size=200m
+      - NEO4J_server_memory_pagecache_size=32m
+      - NEO4J_dbms_usage__report_enabled=false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    volumes:
+      - neo4j-data:/data
+
+  memgraph:
+    image: memgraph/memgraph:latest
+    container_name: bench-memgraph
+    ports:
+      - "7688:7687"   # bolt (mapped to a different host port to avoid clashing with neo4j)
+    command: ["--memory-limit=200"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    volumes:
+      - memgraph-data:/var/lib/memgraph
+
+  arangodb:
+    image: arangodb:3.11
+    container_name: bench-arangodb
+    ports:
+      - "8529:8529"
+    environment:
+      - ARANGO_ROOT_PASSWORD=benchmarkpass
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    volumes:
+      - arangodb-data:/var/lib/arangodb3
+
+  dgraph-zero:
+    image: dgraph/dgraph:latest
+    container_name: bench-dgraph-zero
+    command: dgraph zero --my=dgraph-zero:5080
+    volumes:
+      - dgraph-data:/dgraph
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 64M
+
+  dgraph-alpha:
+    image: dgraph/dgraph:latest
+    container_name: bench-dgraph-alpha
+    ports:
+      - "8080:8080"   # http
+      - "9080:9080"   # grpc
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080 --security whitelist=0.0.0.0/0
+    depends_on:
+      - dgraph-zero
+    volumes:
+      - dgraph-data:/dgraph
+    deploy:
+      resources:
+        limits:
+          cpus: "0.35"
+          memory: 192M
+
+volumes:
+  neo4j-data:
+  memgraph-data:
+  arangodb-data:
+  dgraph-data:
+
+# Note: Dgraph's minimum viable footprint is two processes (zero + alpha). We split the
+# 0.5 vCPU / 256MB budget across both so the *combined* Dgraph deployment matches the same
+# total resource envelope as the single-container platforms. Document this split explicitly
+# in the README as a fairness judgment call — it's the one place where a strict single-container
+# cap isn't achievable for this platform's architecture.
