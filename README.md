@@ -4,10 +4,6 @@ A reproducible, honest benchmark comparing [CognoDB Cloud](https://cognodb.com) 
 other graph database platforms on identical hardware, data, and query workloads. Java/Maven port
 of the original harness.
 
-## TL;DR
-
-| | |
-|---|---|
 | **Databases compared** | CognoDB Cloud, Neo4j Community, Memgraph, ArangoDB, Dgraph |
 | **Dataset** | SNAP `email-Enron` — 36,692 nodes / 367,662 directed edges |
 | **Resource parity** | All platforms capped to 0.5 vCPU / 256 MB RAM / 1 GB disk (CognoDB free-tier spec) |
@@ -178,6 +174,3 @@ java -jar target/graph-benchmark.jar run-all neo4j --skip-load
 ├── data/                          # downloaded dataset (gitignored)
 └── results/                       # raw JSON results per platform/workload (gitignored)
 ```
-
-## License
-MIT
